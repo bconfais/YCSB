@@ -51,7 +51,7 @@ import org.json.JSONObject;
  * See {@code ipfs/README.md} for details.
  */
 public class IPFSClient extends DB {
-  public static final int NB_HOSTS = 2;
+  public static final int NB_HOSTS = 4;
   public static final String HOST_PROPERTY = "ipfs.host";
   public static final String PORT_PROPERTY = "ipfs.port";
   public static final String HOST_DEFAULT = "127.0.0.1";
@@ -85,10 +85,9 @@ public class IPFSClient extends DB {
           ports[i] = PORT_DEFAULT;
         }
       }
-      System.out.println(hosts[0]+"/"+ports[0]);
-      System.out.println(hosts[1]+"/"+ports[1]);
       // TODO: try catch
       for (int i = 0; i < NB_HOSTS; i++) {
+        System.out.println(hosts[i]+"/"+ports[i]);
         ipfs[i] = new IPFS("/ip4/"+hosts[i]+"/tcp/"+ports[i]);
       }
     }
@@ -148,7 +147,7 @@ public class IPFSClient extends DB {
     // select a server
     int s = rand.nextInt(100);
 
-    Block b = ipfs[s%2].new Block();
+    Block b = ipfs[s%NB_HOSTS].new Block();
     List<byte[]> a = new ArrayList<byte[]>();
     a.add(json.toString().getBytes());
     String hash = null;
