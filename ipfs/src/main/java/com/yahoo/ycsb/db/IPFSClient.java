@@ -133,7 +133,10 @@ public class IPFSClient extends DB {
       result.put(key, new ByteArrayByteIterator(data));
     } catch(IOException e) {
       return new Status("ERROR-" + "", e.getMessage());
+    } catch(Exception e) {
+      return new Status("ERROR-" + "", e.getMessage());
     }
+
     return Status.OK;
   }
 
