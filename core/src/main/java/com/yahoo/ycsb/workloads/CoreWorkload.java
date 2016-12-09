@@ -532,7 +532,7 @@ public class CoreWorkload extends Workload {
     } else {
       // fill with random data
       //data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
-      data = new FileByteIterator();
+      data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
     }
     value.put(fieldkey, data);
 
@@ -552,7 +552,7 @@ public class CoreWorkload extends Workload {
       } else {
         // fill with random data
         //data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
-        data = new FileByteIterator();
+        data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
       }
       values.put(fieldkey, data);
     }

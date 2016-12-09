@@ -21,13 +21,21 @@ import java.util.Random;
 
 public class FileByteIterator extends ByteIterator {
 	private static FileReader file;
-	private static int offset = 0;
-	private static long range = 1000000000L;
+	private static int max_skip = 100000000;
+	private static final String filename = "/tmp/dummy";
+	private long len;
+	private long off;
+	private int bufOff;
+	private byte[] buf;
+
 	static {
+		init_file();
+	}
+
+	private static void init_file() {
 		try {
-			file = new FileReader("/tmp/dummy");
-			Random r = new Random();
-			file.skip((long)(r.nextDouble()*range));
+			file = new FileReader(filename);
+			file.skip(skip());
 		} catch(java.io.FileNotFoundException e) {
 			System.out.println("dummy file not found");
 			file = null;
@@ -37,45 +45,83 @@ public class FileByteIterator extends ByteIterator {
 		}
 	}
 
-	public FileByteIterator() {
-
+	private static long skip() {
+		Random r = new Random();
+		return (long) r.nextInt(max_skip);
 	}
 
-	@Override
-	synchronized public boolean hasNext() {
-		try {
-			return file.ready();
-		} catch (IOException e) {
-			return false;
-		}
-	}
 
-	@Override
-	synchronized public byte nextByte() {
-		byte ret;
-		if ( file == null ) {
-			return (byte) 0;
-		}
+	private void fillBytesImpl(byte[] buffer, int base) {
+		int bytes;
 		try {
-			ret = (byte) file.read();
+			bytes = file.read();
 		} catch (IOException e) {
 			System.out.println("read dummy file failed, use the random generator instead");
-			return (byte) 0;
+			init_file();
+			bytes = 0;
 		}
-		return ret;
+		switch(buffer.length - base) {
+			default:
+				buffer[base+5] = (byte)(((bytes >> 25) & 95) + ' ');
+			case 5:
+				buffer[base+4] = (byte)(((bytes >> 20) & 63) + ' ');
+			case 4:
+				buffer[base+3] = (byte)(((bytes >> 15) & 31) + ' ');
+			case 3:
+				buffer[base+2] = (byte)(((bytes >> 10) & 95) + ' ');
+			case 2:
+				buffer[base+1] = (byte)(((bytes >> 5) & 63) + ' ');
+			case 1:
+				buffer[base+0] = (byte)(((bytes) & 31) + ' ');
+			case 0:
+				break;
+		}
+	}
+
+	private void fillBytes() {
+		fillBytesImpl(buf, 0);
+		bufOff = 0;
+		off += buf.length;
+	}
+
+	public FileByteIterator(long len) {
+		this.len = len;
+		this.buf = new byte[6];
+		this.bufOff = buf.length;
+		fillBytes();
+		this.off = 0;
 	}
 
 	@Override
-	synchronized public long bytesLeft() {
-		try {
-			if ( file.ready() ) {
-				return 1;
-			} else {
-				return 0;
-			}
-		} catch (IOException e) {
-			return 0;
+	public boolean hasNext() {
+		return (off + bufOff) < len;
+	}
+
+	public byte nextByte() {
+		fillBytes();
+		bufOff++;
+		return buf[bufOff-1];
+	}
+
+	@Override
+	public int nextBuf(byte[] buffer, int bufferOffset) {
+		int ret;
+		if(len - off < buffer.length - bufferOffset) {
+			ret = (int)(len - off);
+		} else {
+			ret = buffer.length - bufferOffset;
 		}
+		int i;
+		for(i = 0; i < ret; i+=6) {
+			fillBytesImpl(buffer, i + bufferOffset);
+		}
+		off+=ret;
+		return ret + bufferOffset;
+	}
+
+	@Override
+	public long bytesLeft() {
+		return len - off - bufOff;
 	}
 
 }

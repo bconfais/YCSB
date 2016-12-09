@@ -25,11 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-
 /**
  * Utility functions.
  */
@@ -38,20 +33,7 @@ public class Utils
   private static final Random rand = new Random();
   private static final ThreadLocal<Random> rng = new ThreadLocal<Random>();
 
-  private static File file;
-  private static int offset;
-  private static InputStream in;
-
   public static Random random() {
-    try {
-      file = new File("/tmp/dummy");
-      in = new FileInputStream(file);
-    } catch(java.io.FileNotFoundException e) {
-      System.out.println("dummy file not found");
-      file = null;
-      in = null;
-    }
-    offset=0;
     Random ret = rng.get();
     if(ret == null) {
       ret = new Random(rand.nextLong());
@@ -64,19 +46,10 @@ public class Utils
        */
       public static String ASCIIString(int length)
       {
-	int interval='~'-' '+1;
+	 int interval='~'-' '+1;
+	
         byte []buf = new byte[length];
-        try {
-          if ( file != null ) {
-            in.read(buf, offset, length);
-            offset += length;
-          } else {
-            random().nextBytes(buf);
-          }
-        } catch(IOException e) {
-	  System.out.println("read dummy file failed, use the random generator instead");
-          random().nextBytes(buf);
-        }
+        random().nextBytes(buf);
         for (int i = 0; i < length; i++) {
           if (buf[i] < 0) {
             buf[i] = (byte)((-buf[i] % interval) + ' ');
