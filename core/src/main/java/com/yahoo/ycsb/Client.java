@@ -467,12 +467,15 @@ class ClientThread implements Runnable
       }
       else
       {
+//        int keynum = _workload.keysequence.nextValue().intValue();
+//        String dbkey = _workload.buildKeyName(keynum);
+        HashMap<String, ByteIterator> values = _workload.buildValues(new String());
         long startTimeNanos = System.nanoTime();
 
         while (((_opcount == 0) || (_opsdone < _opcount)) && !_workload.isStopRequested())
         {
 
-          if (!_workload.doInsert(_db,_workloadstate))
+          if (!_workload.doInsert(_db,_workloadstate, values))
           {
             break;
           }

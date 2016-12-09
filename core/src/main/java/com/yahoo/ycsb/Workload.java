@@ -19,6 +19,8 @@ package com.yahoo.ycsb;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Properties;
+import java.util.HashMap;
+
 
 
 /**
@@ -36,6 +38,7 @@ import java.util.Properties;
  * client how many inserts to do. In the example above, both clients should have insertcount=500000.
  */
 public abstract class Workload {
+
   public static final String INSERT_START_PROPERTY = "insertstart";
   public static final String INSERT_COUNT_PROPERTY = "insertcount";
   
@@ -81,7 +84,8 @@ public abstract class Workload {
    * effects other than DB operations and mutations on threadstate. Mutations to threadstate do not need to be
    * synchronized, since each thread has its own threadstate instance.
    */
-  public abstract boolean doInsert(DB db, Object threadstate);
+  public abstract boolean doInsert(DB db, Object threadstate, HashMap<String, ByteIterator> values);
+  public abstract HashMap<String, ByteIterator> buildValues(String key);
 
   /**
    * Do one transaction operation. Because it will be called concurrently from multiple client threads, this

@@ -51,7 +51,7 @@ public class FileByteIterator extends ByteIterator {
 	}
 
 
-	private void fillBytesImpl(byte[] buffer, int base) {
+	synchronized private void fillBytesImpl(byte[] buffer, int base) {
 		int bytes;
 		try {
 			bytes = file.read();

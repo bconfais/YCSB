@@ -239,7 +239,7 @@ public class RestWorkload extends CoreWorkload {
    * Not required for Rest Clients as data population is service specific.
    */
   @Override
-  public boolean doInsert(DB db, Object threadstate) {
+  public boolean doInsert(DB db, Object threadstate, HashMap<String, ByteIterator> values) {
     return false;
   }
 

@@ -506,7 +506,7 @@ public class CoreWorkload extends Workload {
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
   }
 
-  public String buildKeyName(long keynum) {
+  private String buildKeyName(long keynum) {
     if (!orderedinserts) {
       keynum = Utils.hash(keynum);
     }
@@ -531,8 +531,8 @@ public class CoreWorkload extends Workload {
       data = new StringByteIterator(buildDeterministicValue(key, fieldkey));
     } else {
       // fill with random data
-      //data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
-      data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
+      data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
+      //data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
     }
     value.put(fieldkey, data);
 
@@ -542,7 +542,7 @@ public class CoreWorkload extends Workload {
   /**
    * Builds values for all fields.
    */
-  private HashMap<String, ByteIterator> buildValues(String key) {
+  public HashMap<String, ByteIterator> buildValues(String key) {
     HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
 
     for (String fieldkey : fieldnames) {
@@ -551,8 +551,8 @@ public class CoreWorkload extends Workload {
         data = new StringByteIterator(buildDeterministicValue(key, fieldkey));
       } else {
         // fill with random data
-        //data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
-        data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
+        data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
+        //data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
       }
       values.put(fieldkey, data);
     }
@@ -584,10 +584,10 @@ public class CoreWorkload extends Workload {
    * have no side effects other than DB operations.
    */
   @Override
-  public boolean doInsert(DB db, Object threadstate) {
+  public boolean doInsert(DB db, Object threadstate, HashMap<String, ByteIterator> values) {
     int keynum = keysequence.nextValue().intValue();
     String dbkey = buildKeyName(keynum);
-    HashMap<String, ByteIterator> values = buildValues(dbkey);
+//    HashMap<String, ByteIterator> values = buildValues(dbkey);
 
     Status status;
     int numOfRetries = 0;
