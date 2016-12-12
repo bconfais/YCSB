@@ -34,7 +34,7 @@ import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map.Entry;
+//import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
@@ -61,9 +61,11 @@ public class IPFSClient extends DB {
   private static final AtomicInteger INIT_COUNT = new AtomicInteger(0);
 
   public void init() throws DBException {
+//    final int curInitCount = INIT_COUNT.incrementAndGet();
     Random rand = new Random();
     Properties props = getProperties();
     int numHost = rand.nextInt(100) % NB_HOSTS;
+//    int numHost = curInitCount % NB_HOSTS;
     String host = props.getProperty(HOST_PROPERTY+(numHost+1));
     String port = props.getProperty(PORT_PROPERTY+(numHost+1));
     if (null == host) {
@@ -117,10 +119,13 @@ public class IPFSClient extends DB {
   public Status insert(String table, String key, HashMap<String, ByteIterator> values) {
 //    JSONObject json = new JSONObject();
     List<byte[]> a = new ArrayList<byte[]>();
+    a.add(values.entrySet().iterator().next().getValue().toArray());
+/*
     for (final Entry<String, ByteIterator> e : values.entrySet()) {
       a.add(e.getValue().toArray());
       break;
     }
+*/
 
 //    List<byte[]> a = new ArrayList<byte[]>();
     Block b = ipfs.new Block();
