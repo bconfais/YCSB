@@ -534,6 +534,7 @@ public class CoreWorkload extends Workload {
       data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
       //data = new FileByteIterator(fieldlengthgenerator.nextValue().longValue());
     }
+    data.toString();
     value.put(fieldkey, data);
 
     return value;

@@ -46,7 +46,7 @@ import java.util.Iterator;
  */
 public abstract class ByteIterator implements Iterator<Byte> {
 
-	protected String cache;
+	protected byte[] cache;
 
 	@Override
 	public abstract boolean hasNext();
@@ -77,25 +77,23 @@ public abstract class ByteIterator implements Iterator<Byte> {
 
 	/** Consumes remaining contents of this object, and returns them as a string. */
 	public String toString() {
-		if (null != cache) {
-			return cache;
-		}
 		Charset cset = Charset.forName("UTF-8");
 		CharBuffer cb = cset.decode(ByteBuffer.wrap(this.toArray()));
-		cache = new String(cb.toString());
 		return cb.toString();
 	}
 
 	/** Consumes remaining contents of this object, and returns them as a byte array. */
 	public byte[] toArray() {
-	    long left = bytesLeft();
-	    if(left != (int)left) { throw new ArrayIndexOutOfBoundsException("Too much data to fit in one array!"); }
-	    byte[] ret = new byte[(int)left];
-	    int off = 0;
-	    while(off < ret.length) {
-		off = nextBuf(ret, off);
+	    if ( null == cache) {
+		    long left = bytesLeft();
+		    if(left != (int)left) { throw new ArrayIndexOutOfBoundsException("Too much data to fit in one array!"); }
+		    cache = new byte[(int)left];
+		    int off = 0;
+		    while(off < cache.length) {
+			off = nextBuf(cache, off);
+		    }
 	    }
-	    return ret;
+	    return cache;
 	}
 
 }

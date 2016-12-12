@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.json.JSONObject;
+//import org.json.JSONObject;
 
 /**
  * YCSB binding for <a href="http://ipfs.io/">IPFS</a>.
@@ -51,59 +51,33 @@ import org.json.JSONObject;
  * See {@code ipfs/README.md} for details.
  */
 public class IPFSClient extends DB {
+  private IPFS ipfs;
+
   public static final int NB_HOSTS = 4;
   public static final String HOST_PROPERTY = "ipfs.host";
   public static final String PORT_PROPERTY = "ipfs.port";
   public static final String HOST_DEFAULT = "127.0.0.1";
   public static final String PORT_DEFAULT = "5001";
-
-  private static IPFS[] ipfs = new IPFS[NB_HOSTS];
-  private static Random rand;
-
   private static final AtomicInteger INIT_COUNT = new AtomicInteger(0);
 
   public void init() throws DBException {
-    long s = 0;
-    long ss = 0;
-    final int curInitCount = INIT_COUNT.incrementAndGet();
-    synchronized(INIT_COUNT) {
-      if(1<curInitCount) {
-        return;
-      }
-      s = System.nanoTime();
-      Properties props = getProperties();
-      String[] hosts = new String[NB_HOSTS];
-      String[] ports = new String[NB_HOSTS];
-      rand = new Random();
-      for (int i = 0; i < NB_HOSTS; i++) {
-        hosts[i] = props.getProperty(HOST_PROPERTY+(i+1));
-        ports[i] = props.getProperty(PORT_PROPERTY+(i+1));
-        if (null == hosts[i]) {
-          hosts[i] = HOST_DEFAULT;
-        }
-        if (null == ports[i]) {
-          ports[i] = PORT_DEFAULT;
-        }
-      }
-      // TODO: try catch
-      for (int i = 0; i < NB_HOSTS; i++) {
-        System.out.println(hosts[i]+"/"+ports[i]);
-        ipfs[i] = new IPFS("/ip4/"+hosts[i]+"/tcp/"+ports[i]);
-      }
+    Random rand = new Random();
+    Properties props = getProperties();
+    int numHost = rand.nextInt(100) % NB_HOSTS;
+    String host = props.getProperty(HOST_PROPERTY+(numHost+1));
+    String port = props.getProperty(PORT_PROPERTY+(numHost+1));
+    if (null == host) {
+      host = HOST_DEFAULT;
     }
-    ss = System.nanoTime();
-    System.out.println("connect: "+(ss-s)+" - "+Thread.currentThread().getName());
+    if (null == port) {
+      port = PORT_DEFAULT;
+    }
+    System.out.println(host+"/"+port);
+    ipfs = new IPFS("/ip4/"+host+"/tcp/"+port);
   }
 
   public void cleanup() throws DBException {
-    synchronized (INIT_COUNT) {
-      final int curInitCount = INIT_COUNT.decrementAndGet();
-      if (curInitCount <= 0) {
-        for (int i = 0; i < NB_HOSTS; i++) {
-          ipfs[i] = null;
-        }
-      }
-    }
+    ipfs = null;
   }
 
   @Override
@@ -124,13 +98,12 @@ public class IPFSClient extends DB {
     if (null == hash) {
       return new Status("ERROR-" + "", "no key");
     }
-    // select a server
-    int s = rand.nextInt(100);
 
-    Block b = ipfs[s%NB_HOSTS].new Block();
+    Block b = ipfs.new Block();
     try {
-      byte[] data = b.get(Multihash.fromBase58(hash));
-      result.put(key, new ByteArrayByteIterator(data));
+      result.put(key, new ByteArrayByteIterator(
+          b.get(Multihash.fromBase58(hash))
+      ));
     } catch(IOException e) {
       return new Status("ERROR-" + "", e.getMessage());
     } catch(Exception e) {
@@ -142,17 +115,16 @@ public class IPFSClient extends DB {
 
   @Override
   public Status insert(String table, String key, HashMap<String, ByteIterator> values) {
-    JSONObject json = new JSONObject();
+//    JSONObject json = new JSONObject();
+    List<byte[]> a = new ArrayList<byte[]>();
     for (final Entry<String, ByteIterator> e : values.entrySet()) {
-      json.put(e.getKey(), e.getValue().toString());
+      a.add(e.getValue().toArray());
+      break;
     }
 
-    // select a server
-    int s = rand.nextInt(100);
-
-    Block b = ipfs[s%NB_HOSTS].new Block();
-    List<byte[]> a = new ArrayList<byte[]>();
-    a.add(json.toString().getBytes());
+//    List<byte[]> a = new ArrayList<byte[]>();
+    Block b = ipfs.new Block();
+//    a.add(json.toString().getBytes());
     String hash = null;
     try {
       MerkleNode merkle = b.put(a).get(0);

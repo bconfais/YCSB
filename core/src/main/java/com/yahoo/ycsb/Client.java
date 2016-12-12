@@ -377,6 +377,8 @@ class ClientThread implements Runnable
   long _targetOpsTickNs;
   final Measurements _measurements;
 
+  HashMap<String, ByteIterator> _values;
+
   /**
    * Constructor.
    *
@@ -403,6 +405,7 @@ class ClientThread implements Runnable
     _measurements = Measurements.getMeasurements();
     _spinSleep = Boolean.valueOf(_props.getProperty("spin.sleep", "false"));
     _completeLatch=completeLatch;
+    _values = _workload.buildValues(new String());
   }
 
   public int getOpsDone()
@@ -469,13 +472,12 @@ class ClientThread implements Runnable
       {
 //        int keynum = _workload.keysequence.nextValue().intValue();
 //        String dbkey = _workload.buildKeyName(keynum);
-        HashMap<String, ByteIterator> values = _workload.buildValues(new String());
         long startTimeNanos = System.nanoTime();
 
         while (((_opcount == 0) || (_opsdone < _opcount)) && !_workload.isStopRequested())
         {
 
-          if (!_workload.doInsert(_db,_workloadstate, values))
+          if (!_workload.doInsert(_db,_workloadstate, _values))
           {
             break;
           }
