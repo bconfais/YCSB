@@ -46,6 +46,8 @@ import java.util.Iterator;
  */
 public abstract class ByteIterator implements Iterator<Byte> {
 
+	protected String cache;
+
 	@Override
 	public abstract boolean hasNext();
 
@@ -75,8 +77,12 @@ public abstract class ByteIterator implements Iterator<Byte> {
 
 	/** Consumes remaining contents of this object, and returns them as a string. */
 	public String toString() {
+		if (null != cache) {
+			return cache;
+		}
 		Charset cset = Charset.forName("UTF-8");
 		CharBuffer cb = cset.decode(ByteBuffer.wrap(this.toArray()));
+		cache = new String(cb.toString());
 		return cb.toString();
 	}
 

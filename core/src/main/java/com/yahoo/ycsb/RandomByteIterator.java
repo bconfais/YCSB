@@ -65,6 +65,7 @@ public class RandomByteIterator extends ByteIterator {
     this.bufOff = buf.length;
     fillBytes();
     this.off = 0;
+    this.cache = null;
   }
 
   public byte nextByte() {
